@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Salary Prediction</title>
+    <style>
+        body { font-family: 'Segoe UI', 'Roboto', Arial, sans-serif; background: #f7fafc; margin: 0; padding: 0; }
+        .container { max-width: 400px; margin: 2rem auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(60,72,88,0.07); padding: 2rem; }
+        h2 { color: #2563eb; text-align: center; margin-bottom: 1.5rem; }
+        label { display: block; margin-top: 1rem; color: #22223b; font-weight: 500; }
+        input, select { width: 100%; padding: 0.5rem; margin-top: 0.3rem; border-radius: 6px; border: 1px solid #e5e7eb; font-size: 1rem; }
+        .submit-btn { width: 100%; background: #2563eb; color: #fff; border: none; padding: 0.7rem; border-radius: 6px; font-size: 1.1rem; margin-top: 1.5rem; cursor: pointer; transition: background 0.2s; }
+        .submit-btn:disabled { background: #a5b4fc; cursor: not-allowed; }
+        .submit-btn:hover:enabled { background: #1d4ed8; }
+        .warning, .error { color: #b91c1c; background: #fee2e2; border: 1px solid #fca5a5; border-radius: 6px; padding: 0.7rem 1rem; margin-top: 1rem; text-align: center; font-size: 1rem; }
+        .error { margin-top: 0.5rem; }
+        @media (max-width: 500px) { .container { padding: 1rem; } }
+    </style>
+    <script>
+    function validateForm() {
+        var age = parseInt(document.getElementById('age').value);
+        var years = parseInt(document.getElementById('years_at_company').value);
+        var promotion = document.getElementById('promotion').value;
+        var yearsWarning = document.getElementById('years-warning');
+        var promoWarning = document.getElementById('promo-warning');
+        var submitBtn = document.getElementById('submit-btn');
+        var valid = true;
+        
+        if (!isNaN(age) && !isNaN(years) && years > (age - 18)) {
+            yearsWarning.style.display = 'block';
+            valid = false;
+        } else {
+            yearsWarning.style.display = 'none';
+        }
+        
+        if (!isNaN(years) && years < 5 && promotion === 'Yes') {
+            promoWarning.style.display = 'block';
+            valid = false;
+        } else {
+            promoWarning.style.display = 'none';
+        }
+        submitBtn.disabled = !valid;
+        return valid;
+    }
+    function attachValidation() {
+        var ageInput = document.getElementById('age');
+        var yearsInput = document.getElementById('years_at_company');
+        var promoInput = document.getElementById('promotion');
+        ageInput.addEventListener('input', validateForm);
+        yearsInput.addEventListener('input', validateForm);
+        promoInput.addEventListener('change', validateForm);
+        validateForm(); 
+    }
+    window.onload = attachValidation;
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h2>Employee Salary Prediction</h2>
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="warning">{{ messages[0] }}</div>
+          {% endif %}
+        {% endwith %}
+        <form method="post" action="/predict" onsubmit="return validateForm();">
+            <label for="gender">Gender</label>
+            <select name="gender" id="gender" required>
+                {% for g in gender_options %}<option value="{{g}}">{{g}}</option>{% endfor %}
+            </select>
+            <label for="age">Age</label>
+            <input type="number" name="age" id="age" min="18" max="70" required>
+            <label for="department">Department</label>
+            <select name="department" id="department" required>
+                {% for d in department_options %}<option value="{{d}}">{{d}}</option>{% endfor %}
+            </select>
+            <label for="job_title">Job Title</label>
+            <select name="job_title" id="job_title" required>
+                {% for j in job_title_options %}<option value="{{j}}">{{j}}</option>{% endfor %}
+            </select>
+            <label for="years_at_company">Years at Company</label>
+            <input type="number" name="years_at_company" id="years_at_company" min="0" max="50" required>
+            <div id="years-warning" class="error" style="display:none;">Years at company cannot exceed total possible working years since age 18.</div>
+            <label for="avg_monthly_hours">Average Monthly Hours</label>
+            <input type="number" name="avg_monthly_hours" id="avg_monthly_hours" min="0" max="400" required>
+            <label for="promotion">Promotion in Last 5 Years</label>
+            <select name="promotion" id="promotion" required>
+                {% for p in promotion_options %}<option value="{{p}}">{{p}}</option>{% endfor %}
+            </select>
+            <div id="promo-warning" class="error" style="display:none;">An employee cannot be promoted in the last 5 years if they have not worked for at least 5 years.</div>
+            <button type="submit" class="submit-btn" id="submit-btn">Predict Salary</button>
+        </form>
+    </div>
+</body>
+</html> 
